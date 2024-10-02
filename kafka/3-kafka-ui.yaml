@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kafka-ui
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: kafka-ui
+  template:
+    metadata:
+      labels:
+        name: kafka-ui
+    spec:
+      containers:
+        - env:
+            - name: DYNAMIC_CONFIG_ENABLED
+              value: "true"
+            - name: KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS
+              value: kafka0:29092
+            - name: KAFKA_CLUSTERS_0_KAFKACONNECT_0_ADDRESS
+              value: http://kafka-connect:8083
+            - name: KAFKA_CLUSTERS_0_KAFKACONNECT_0_NAME
+              value: first
+            - name: KAFKA_CLUSTERS_0_METRICS_PORT
+              value: "9997"
+            - name: KAFKA_CLUSTERS_0_NAME
+              value: k8s
+            - name: KAFKA_CLUSTERS_0_SCHEMAREGISTRY
+              value: http://schemaregistry:8085
+          image: provectuslabs/kafka-ui:latest
+          name: kafka-ui
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka-ui
+spec:
+  ports:
+    - name: "8080"
+      port: 8080
+      targetPort: 8080
+  selector:
+    name: kafka-ui

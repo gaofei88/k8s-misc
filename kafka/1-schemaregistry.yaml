@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: schemaregistry
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: schemaregistry
+  template:
+    metadata:
+      labels:
+        name: schemaregistry
+    spec:
+      containers:
+        - env:
+            - name: SCHEMA_REGISTRY_HOST_NAME
+              value: schemaregistry
+            - name: SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS
+              value: PLAINTEXT://kafka0:29092
+            - name: SCHEMA_REGISTRY_KAFKASTORE_SECURITY_PROTOCOL
+              value: PLAINTEXT
+            - name: SCHEMA_REGISTRY_KAFKASTORE_TOPIC
+              value: _schemas
+            - name: SCHEMA_REGISTRY_LISTENERS
+              value: http://schemaregistry:8085
+            - name: SCHEMA_REGISTRY_LOG4J_ROOT_LOGLEVEL
+              value: INFO
+            - name: SCHEMA_REGISTRY_SCHEMA_REGISTRY_INTER_INSTANCE_PROTOCOL
+              value: http
+          image: confluentinc/cp-schema-registry:7.2.1
+          name: schemaregistry
+          ports:
+            - containerPort: 8085
+              protocol: TCP
+      hostname: schemaregistry
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: schemaregistry
+spec:
+  ports:
+    - name: "8085"
+      port: 8085
+      targetPort: 8085
+  selector:
+    name: schemaregistry
+
